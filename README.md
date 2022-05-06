@@ -5,14 +5,6 @@ In this repository,
 
 We are going to reproduce the CutMix algorithm based on the paper "CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features".
 
-paper link ↓↓↓↓↓↓↓↓
-
-ref) https://arxiv.org/abs/1905.04899v2
-
-github link ↓↓↓↓↓↓↓↓
-
-ref) https://github.com/clovaai/CutMix-PyTorch
-
 # The Overall Process
 
 1. Introduce problem
@@ -26,7 +18,10 @@ Above tasks will be done with the code demo.
 
 # Check list
 
-1. data loading [ ]
+1. data loading [22.5.6]
+    kaggle-dataset : https://www.kaggle.com/c/bengaliai-cv19/data
+    You can download the dataset on website and follow instruction.
+
 2. methods (including NNs) [ ]
 3. model compilation [ ]
 4. loss functions and optimisers [ ]
@@ -56,3 +51,18 @@ Development Environment & Tools
 [ ] paper summary
 
 [ ] presentation
+
+# Reference 
+
+paper link ↓↓↓↓↓↓↓↓
+
+ref) https://arxiv.org/abs/1905.04899v2
+
+github link ↓↓↓↓↓↓↓↓
+
+main ) https://github.com/clovaai/CutMix-PyTorch
+sub  ) https://github.com/kaggler-tv/codes
+
+Dataset link
+
+kaggle ) https://www.kaggle.com/c/bengaliai-cv19/data
