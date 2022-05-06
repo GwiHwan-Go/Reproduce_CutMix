@@ -19,9 +19,6 @@ Above tasks will be done with the code demo.
 # Check list
 
 1. data loading [22.5.6]
-    kaggle-dataset : https://www.kaggle.com/c/bengaliai-cv19/data
-    You can download the dataset on website and follow instruction.
-
 2. methods (including NNs) [ ]
 3. model compilation [ ]
 4. loss functions and optimisers [ ]
