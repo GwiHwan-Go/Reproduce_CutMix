@@ -38,6 +38,8 @@ Development Environment & Tools
 
 1. Colab
 2. Jupyter notebook
+3. Visual Studio Code
+4. Github
 3. Python
 4. Pytorch
 
@@ -54,14 +56,3 @@ Development Environment & Tools
 [ ] paper summary
 
 [ ] presentation
-
-
-hello
-
-
-
-
-
-
-
-
