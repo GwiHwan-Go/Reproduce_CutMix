@@ -39,9 +39,9 @@ Development Environment & Tools
 
 [22.5.6] Initiate the project
 
-[ ] Finishing Environment Setup
+[22.5.6] Finishing Environment Setup
 
-[ ] Data download
+[22.5.6] Data download
 
 [ ] Training
 
