@@ -58,6 +58,7 @@ ref) https://arxiv.org/abs/1905.04899v2
 github link ↓↓↓↓↓↓↓↓
 
 main ) https://github.com/clovaai/CutMix-PyTorch
+
 sub  ) https://github.com/kaggler-tv/codes
 
 Dataset link
