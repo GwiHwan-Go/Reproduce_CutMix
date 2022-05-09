@@ -66,3 +66,26 @@ you can run below lines to set pyenv as the kernel of your jupyter notebook
 ```
 
 ### 3. install matched torch and cuda
+
+Here is what I did.
+
+Firtst, install the conda.
+```
+wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh
+bash Anaconda3-2019.10-Linux-x86_64.sh
+add "export PATH="/home/username/anaconda3/bin:$PATH" to ~/.bashrc
+source ~/.bashrc
+```
+And then, install matched version of pytorch tools.
+For me, I'm using the version of cuda 11.7
+```
+conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=11.0 -c pytorch
+
+```
+Finally, check out whether intended version has installed or not.
+```
+pip list
+python -> import torch -> torch.__version__
+
+```
+This kind of problem really drove me crazy since I didn't know what is happening inside...
