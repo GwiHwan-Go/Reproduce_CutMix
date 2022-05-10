@@ -19,9 +19,9 @@ Above tasks will be done with the code demo.
 # Check list
 
 1. data loading [22.5.6]
-2. methods (including NNs) [ ]
-3. model compilation [ ]
-4. loss functions and optimisers [ ]
+2. methods (including NNs) [22.5.8]
+3. model compilation [22.5.8]
+4. loss functions and optimisers [22.5.8]
 5. training [ ]
 6. tweaks [ ]
 7. valuation [ ]
@@ -43,7 +43,7 @@ Development Environment & Tools
 
 [22.5.6] Data download
 
-[ ] Training
+[22.5.8] Training
 
 [ ] paper summary
 
@@ -77,4 +77,3 @@ git commit -m "어디어디 수정"
 git remote add origin https://github.com/본인아이디/레포지토리이름.git
 
 git push -u origin master
-
