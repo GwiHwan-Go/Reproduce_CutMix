@@ -5,3 +5,7 @@ __pycache__
 preprocess.py
 
 model.pt
+
+training.sh
+
+.python-version
