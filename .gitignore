@@ -2,8 +2,6 @@ Local.py
 
 __pycache__
 
-.gitignore
-
 preprocess.py
 
 model.pt
