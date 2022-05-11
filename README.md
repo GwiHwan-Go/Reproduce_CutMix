@@ -24,7 +24,9 @@ Above tasks will be done with the code demo.
 4. loss functions and optimisers [22.5.8]
 5. training [ ]
 6. tweaks [ ]
-7. valuation [ ]
+7. comparison cutmix regulariztion with others [ ]
+8. implement it on various models[ ]
+9. Other dataset[ ]
 
 Development Environment & Tools
 
