@@ -28,8 +28,6 @@ Above tasks will be done with the code demo.
 8. feature extraction vs fine-tunning [ ]
 <img width="348" src="https://user-images.githubusercontent.com/83144588/167822795-270d32a4-a28f-48da-b6b9-e00625f8ca4b.png"/>
 
-
-출처: https://ndb796.tistory.com/557 [안경잡이개발자]
 9. Other dataset[ ]
 
 Development Environment & Tools
