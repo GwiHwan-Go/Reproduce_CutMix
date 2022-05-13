@@ -1,3 +1,4 @@
+from matplotlib import image
 from tqdm.auto import trange
 import torch
 import torch.nn as nn
@@ -7,27 +8,65 @@ import numpy as np
 import torchvision
 from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
-from CutMix import cut ## CutMix Algorithm
+from sklearn.metrics import recall_score
+########## Load Dataset
+import sys
+sys.path.append("..") ## to import parent's folder
+from Local import DIR
+from Data.BengaliDataset import BengaliDataset
+########### YOUR DIR
+def cut(W,H,lam):
+        
+    cut_rat = np.sqrt(1. - lam)
+    cut_w = np.int32(W * cut_rat)
+    cut_h = np.int32(H * cut_rat)
 
-def get_accuracy(model, data):
-    correct = 0
-    total = 0
+    # uniform
+    cx = np.random.randint(W)
+    cy = np.random.randint(H)
+
+    bbx1 = np.clip(cx - cut_w // 2, 0, W)
+    bby1 = np.clip(cy - cut_h // 2, 0, H)
+    bbx2 = np.clip(cx + cut_w // 2, 0, W)
+    bby2 = np.clip(cy + cut_h // 2, 0, H)
+
+    return bbx1, bby1, bbx2, bby2
+
+def get_accuracy(model, dataloader):
+    losses = []
+    ground_true = []
+    pred = []
+    loss_fn = nn.CrossEntropyLoss()
     model.eval() # For later #
-    for images, labels in torch.utils.data.DataLoader(data, batch_size=64):
+    for images, labels in dataloader :
         output = model(images)
 
         grapheme = output[:, :168]
         vowel = output[:, 168:179]
         cons = output[:, 179:]
+        
+        loss = loss_fn(grapheme, labels[:, 0]) + loss_fn(vowel, labels[:, 1]) + loss_fn(cons, labels[:, 2])
+        losses.append(loss)
 
-        grapheme = grapheme.argmax(dim=1).data.numpy()
-        vowel = vowel.argmax(dim=1).data.numpy()
-        cons = cons.argmax(dim=1).data.numpy()
+        grapheme = grapheme.cpu().argmax(dim=1).data.numpy()
+        vowel = vowel.cpu().argmax(dim=1).data.numpy()
+        cons = cons.cpu().argmax(dim=1).data.numpy()
 
-        pred = output.max(1, keepdim=True)[1] # get the index of the max logit
-        correct += pred.eq(labels.view_as(pred)).sum().item()
-        total += imgs.shape[0]
-    return 100.0 * correct / total
+        ground_true.append(labels.cpu().numpy())
+        pred.append(np.stack([grapheme, vowel, cons], axis=1))
+    
+    ground_true = np.concatenate(ground_true)
+    pred = np.concatenate(pred)
+
+    loss = np.mean(losses)
+
+    score_g = recall_score(ground_true[:, 0], pred[:, 0], average='macro')
+    score_v = recall_score(ground_true[:, 1], pred[:, 1], average='macro')
+    score_c = recall_score(ground_true[:, 2], pred[:, 2], average='macro')
+
+    final_score = np.average([score_g, score_v, score_c], weights=[2, 1, 1])
+
+    return [score_g, score_v, score_c, loss, final_score]
 
 def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=128, weight_decay=0, iscutmix=1):
   # Lists to store model's performance information
@@ -89,13 +128,15 @@ def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=1
       loss.backward()               # backward pass (compute parameter updates)
       optimizer.step()              # make the updates for each parameter
       optimizer.zero_grad()         # reset the gradients for the next iteration
-
-      # Save the current training and validation information at every 10th iteration
-      if (i+1) % 10 == 0:
-          iters.append(i)
-          losses.append(float(loss)/batch_size)        # compute *average* loss
-          train_acc.append(get_accuracy(model, train)) # compute training accuracy 
-          val_acc.append(get_accuracy(model, valid))   # compute validation accuracy
+    
+    
+    scores = get_accuracy(model, train_loader)
+    # Save the current training and validation information at every 10th iteration
+    if (i+1) % 10 == 0:
+        iters.append(i)
+        losses.append(float(loss)/batch_size)        # compute *average* loss
+        train_acc.append(get_accuracy(model, train)) # compute training accuracy 
+        val_acc.append(get_accuracy(model, valid))   # compute validation accuracy
 
 
   print(f'Plotting')
@@ -122,3 +163,50 @@ def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=1
     if val_acc>highest[1] :
       print(f"it achieved new high_acc at iter {i}th with {val_acc}%")
       highest = [i,val_acc]
+
+if __name__ == "__main__" :
+
+  import pandas as pd
+  from sklearn.model_selection import train_test_split
+  from torch.utils.data import Dataset, DataLoader
+  import torchvision.transforms as T
+  from torchvision  import models
+
+  df_train = pd.read_csv(f"{DIR}/train.csv")
+  X_train, X_val = train_test_split(df_train, test_size=0.2)
+  train_dataset = BengaliDataset(data=X_train,
+                            img_height=137,
+                            img_width=236,
+                            transform=T.ToTensor())
+  train_loader = DataLoader(train_dataset,
+                            shuffle=True,
+                            num_workers=0,
+                            batch_size=128
+                            )
+  valid_dataset = BengaliDataset(data=X_val,
+                            img_height=137,
+                            img_width=236,
+                            transform=T.ToTensor())
+  valid_loader = DataLoader(valid_dataset,
+                        shuffle=False,
+                          num_workers=0,
+                          batch_size=128
+                        )
+  batch = next(iter(train_loader))
+  images, labels = batch
+  # VGG16 Model Loading
+  use_pretrained = True
+  model = models.resnet50(pretrained=use_pretrained)
+  ## 우리 이미지 사이즈에 맞게 튜닝
+  model.fc = torch.nn.Linear(2048, 186) 
+
+  device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+  print(device)
+  model = model.to(device)
+  for images, labels in train_loader :
+    images = images.to(device)
+    out = model(images)
+    break
+
+  print(get_accuracy(model, valid_loader))
+  

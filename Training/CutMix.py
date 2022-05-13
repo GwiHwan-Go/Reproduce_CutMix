@@ -8,25 +8,21 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.metrics import recall_score
 import matplotlib.pyplot as plt
+import torch.optim as optim
 from tqdm.auto import tqdm
 import os
 import argparse
 import sys
-from zmq import device
 from sklearn.model_selection import train_test_split
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 import torchvision.transforms as T
 from torch.nn import Linear
-import pretrainedmodels
-from train_model import train_model
 ########## Load Dataset
 sys.path.append("..") ## to import parent's folder
 from Data.BengaliDataset import BengaliDataset
 from Local import DIR
 ########### YOUR DIR
-
 
 def main():
 
