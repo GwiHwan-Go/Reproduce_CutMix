@@ -1,0 +1,1 @@
+ex1= {'base' : {'cutmix' : 0, 'log' : 'logs.txt'}, 'comparison' : {'cutmix' : 1, 'log' : 'no_cut_mic_logs.txt'}} # epochs = 200

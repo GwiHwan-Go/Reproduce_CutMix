@@ -1,12 +1,12 @@
-
-from matplotlib import image
 from tqdm.auto import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
+import gc
 from sklearn.metrics import recall_score
+
 ########## Load Dataset
 import sys
 sys.path.append("..") ## to import parent's folder
@@ -30,7 +30,9 @@ def cut(W,H,lam):
 
     return bbx1, bby1, bbx2, bby2
 
-def get_accuracy(model, dataloader):
+def get_accuracy(dataloader):
+    gc.collect()
+    torch.cuda.empty_cache()
     losses = []
     ground_true = []
     pred = []
@@ -73,8 +75,8 @@ def get_accuracy(model, dataloader):
 
 def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=128, weight_decay=0, iscutmix=1):
   # Lists to store model's performance information
-  iters, losses, train_acc, val_acc = [], [], [], []
-
+  iters, losses, val_acc, train_acc = [], [], [], []
+  high_score = 0
   criterion = nn.CrossEntropyLoss()
   optimizer = optim.SGD(model.parameters(), lr=learn_rate, momentum=0.9, weight_decay=weight_decay)
   scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 
@@ -131,18 +133,109 @@ def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=1
       loss.backward()               # backward pass (compute parameter updates)
       optimizer.step()              # make the updates for each parameter
       optimizer.zero_grad()         # reset the gradients for the next iteration
-    
-    
-    scores = get_accuracy(model, train_loader)
+      gc.collect()
+      torch.cuda.empty_cache()
     # Save the current training and validation information at every 10th iteration
-    if (i+1) % 10 == 0:
-        iters.append(i)
-        losses.append(float(loss)/batch_size)        # compute *average* loss
-        train_acc.append(get_accuracy(model, train)) # compute training accuracy 
-        val_acc.append(get_accuracy(model, valid))   # compute validation accuracy
+    if (i+1) % 2 == 0:
+      iters.append(i)
+      losses.append(float(loss)/batch_size)  
+      ###########evaluate####################
+      losses = []
+      ground_true = []
+      pred = []
+      model.eval() # For later #
 
+      for images, labels in valid :
+
+          images, labels = images.to(device), labels.to(device)
+          output = model(images)
+
+          grapheme = output[:, :168]
+          vowel = output[:, 168:179]
+          cons = output[:, 179:]
+          
+          loss = criterion(grapheme, labels[:, 0]) + criterion(vowel, labels[:, 1]) + criterion(cons, labels[:, 2])
+          losses.append(loss)
+
+          grapheme = grapheme.cpu().argmax(dim=1).data.numpy()
+          vowel = vowel.cpu().argmax(dim=1).data.numpy()
+          cons = cons.cpu().argmax(dim=1).data.numpy()
+
+          ground_true.append(labels.cpu().numpy())
+          pred.append(np.stack([grapheme, vowel, cons], axis=1))
+      
+      ground_true = np.concatenate(ground_true)
+      pred = np.concatenate(pred)
+
+      loss = np.mean(losses)
+
+      score_g = recall_score(ground_true[:, 0], pred[:, 0], average='macro')
+      score_v = recall_score(ground_true[:, 1], pred[:, 1], average='macro')
+      score_c = recall_score(ground_true[:, 2], pred[:, 2], average='macro')
+
+      final_score = np.average([score_g, score_v, score_c], weights=[2, 1, 1])
+
+      val_acc.append([score_g, score_v, score_c, loss, final_score])
+
+      ##evaluate train acc#######
+      for images, labels in train :
+
+        images, labels = images.to(device), labels.to(device)
+        output = model(images)
+
+        grapheme = output[:, :168]
+        vowel = output[:, 168:179]
+        cons = output[:, 179:]
+        
+        loss = criterion(grapheme, labels[:, 0]) + criterion(vowel, labels[:, 1]) + criterion(cons, labels[:, 2])
+        losses.append(loss)
+
+        grapheme = grapheme.cpu().argmax(dim=1).data.numpy()
+        vowel = vowel.cpu().argmax(dim=1).data.numpy()
+        cons = cons.cpu().argmax(dim=1).data.numpy()
+
+        ground_true.append(labels.cpu().numpy())
+        pred.append(np.stack([grapheme, vowel, cons], axis=1))
+      
+      ground_true = np.concatenate(ground_true)
+      pred = np.concatenate(pred)
+
+      loss = np.mean(losses)
+
+      score_g = recall_score(ground_true[:, 0], pred[:, 0], average='macro')
+      score_v = recall_score(ground_true[:, 1], pred[:, 1], average='macro')
+      score_c = recall_score(ground_true[:, 2], pred[:, 2], average='macro')
+
+      final_score = np.average([score_g, score_v, score_c], weights=[2, 1, 1])
+
+      train_acc.append([score_g, score_v, score_c, loss, final_score])
+
+      #######################################
+      if high_score < val_acc[-1][-1] :
+        high_score = val_acc[-1][-1]
+        PATH = './saved_models/best_model.pth'
+
+        torch.save(model.state_dict(), PATH)
+  
+  write_log(val_acc, "val_history")
+  write_log(train_acc, "train_history")
+      
+
+def write_log(logs, title) :
+
+    file_name = f"./logs/{title}.txt"
+    with open(file_name,'w') as f:
+      f.write(f"\n-------{title}---------\n")
+      for i, item in enumerate(logs) :
+        f.write(f"{i}th\n")
+        f.write(' '.join(item))
+    f.close()
+    print(f"file saved as {file_name}")
+
+def plot(iters, losses, train_acc, val_acc) :
 
   print(f'Plotting')
+
   # Plotting Training Loss, Accuracy and Validation Accuracy
   plt.figure(figsize=(10,4))
   plt.subplot(1,2,1)
@@ -161,17 +254,12 @@ def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=1
   plt.show()
   print("Final Training Accuracy: {}".format(train_acc[-1]))
   print("Final Validation Accuracy: {}".format(val_acc[-1]))
-  highest=[0,0]
-  for i, val_acc in zip(iters, val_acc):
-    if val_acc>highest[1] :
-      print(f"it achieved new high_acc at iter {i}th with {val_acc}%")
-      highest = [i,val_acc]
 
 if __name__ == "__main__" :
 
   import pandas as pd
   from sklearn.model_selection import train_test_split
-  from torch.utils.data import Dataset, DataLoader
+  from torch.utils.data import DataLoader
   import torchvision.transforms as T
   from torchvision  import models
 

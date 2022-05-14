@@ -8,4 +8,12 @@ training.sh
 
 .python-version
 
-.python-version
+preprocess.py
+
+logs
+
+saved_models
+
+train_functions.py
+
+model.pt
