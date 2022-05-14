@@ -21,3 +21,5 @@ unzip bengaliai-cv19.zip
 
 Now, we are ready to deal with data.
 Move on to preprocess.ipynb
+
+After run preprocess.ipynb file, you will have preprocessed data on your directory. You also need to move onto BengaliDataset file and set DIR as yours.

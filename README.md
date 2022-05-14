@@ -19,12 +19,16 @@ Above tasks will be done with the code demo.
 # Check list
 
 1. data loading [22.5.6]
-2. methods (including NNs) [ ]
-3. model compilation [ ]
-4. loss functions and optimisers [ ]
+2. methods (including NNs) [22.5.8]
+3. model compilation [22.5.8]
+4. loss functions and optimisers [22.5.8]
 5. training [ ]
 6. tweaks [ ]
-7. valuation [ ]
+7. comparison cutmix regulariztion with others [ ]
+8. feature extraction vs fine-tunning [ ]
+<img width="348" src="https://user-images.githubusercontent.com/83144588/167822795-270d32a4-a28f-48da-b6b9-e00625f8ca4b.png"/>
+
+9. Other dataset[ ]
 
 Development Environment & Tools
 
@@ -43,7 +47,7 @@ Development Environment & Tools
 
 [22.5.6] Data download
 
-[ ] Training
+[22.5.8] Training
 
 [ ] paper summary
 
@@ -64,3 +68,16 @@ sub  ) https://github.com/kaggler-tv/codes
 Dataset link
 
 kaggle ) https://www.kaggle.com/c/bengaliai-cv19/data
+
+
+#### GIT tutorial
+
+git init
+
+git add .
+
+git commit -m "어디어디 수정" 
+
+git remote add origin https://github.com/본인아이디/레포지토리이름.git
+
+git push -u origin master
