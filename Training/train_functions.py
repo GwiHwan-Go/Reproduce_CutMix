@@ -1,12 +1,10 @@
+
 from matplotlib import image
-from tqdm.auto import trange
+from tqdm.auto import tqdm
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
-import torchvision
-from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 from sklearn.metrics import recall_score
 ########## Load Dataset
@@ -38,7 +36,12 @@ def get_accuracy(model, dataloader):
     pred = []
     loss_fn = nn.CrossEntropyLoss()
     model.eval() # For later #
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     for images, labels in dataloader :
+        images, labels = images.to(device), labels.to(device)
+        model = model.to(device)
         output = model(images)
 
         grapheme = output[:, :168]
@@ -83,8 +86,8 @@ def train_model(model, train, valid, n_iters=500, learn_rate=0.001, batch_size=1
   print(f"we are going to use {device}")
                                                   
     ##########
-  for i in trange(n_iters):
-    for images, labels in iter(train):
+  for i in tqdm(range(n_iters)):
+    for images, labels in tqdm(train):
       images, labels = images.to(device), labels.to(device)
       model = model.to(device)
       model.train()
@@ -173,7 +176,7 @@ if __name__ == "__main__" :
   from torchvision  import models
 
   df_train = pd.read_csv(f"{DIR}/train.csv")
-  X_train, X_val = train_test_split(df_train, test_size=0.2)
+  X_train, X_val = train_test_split(df_train, test_size=0.01)
   train_dataset = BengaliDataset(data=X_train,
                             img_height=137,
                             img_width=236,
@@ -181,7 +184,7 @@ if __name__ == "__main__" :
   train_loader = DataLoader(train_dataset,
                             shuffle=True,
                             num_workers=0,
-                            batch_size=128
+                            batch_size=16
                             )
   valid_dataset = BengaliDataset(data=X_val,
                             img_height=137,
@@ -190,23 +193,20 @@ if __name__ == "__main__" :
   valid_loader = DataLoader(valid_dataset,
                         shuffle=False,
                           num_workers=0,
-                          batch_size=128
+                          batch_size=16
                         )
   batch = next(iter(train_loader))
   images, labels = batch
   # VGG16 Model Loading
   use_pretrained = True
-  model = models.resnet50(pretrained=use_pretrained)
+  model = models.resnet18(pretrained=use_pretrained)
   ## 우리 이미지 사이즈에 맞게 튜닝
-  model.fc = torch.nn.Linear(2048, 186) 
+  model.fc = torch.nn.Linear(model.fc.in_features, 186) 
 
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   print(device)
-  model = model.to(device)
-  for images, labels in train_loader :
-    images = images.to(device)
-    out = model(images)
-    break
-
-  print(get_accuracy(model, valid_loader))
+  # model = model.to(device)
+  # for images, labels in train_loader :
+  #   out = model.to(device)(images.to(device))
+  #   break
   

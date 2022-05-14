@@ -18,45 +18,20 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 import torchvision.transforms as T
 from torch.nn import Linear
+from torchvision import models
 ########## Load Dataset
 sys.path.append("..") ## to import parent's folder
 from Data.BengaliDataset import BengaliDataset
 from Local import DIR
+from train_functions import get_accuracy, train_model
 ########### YOUR DIR
 
 def main():
+    ##############PARAMETERS##################
+    batch_size = 128
+    num_epochs = 2
+    ##############PARAMETERS##################
 
-    parser = argparse.ArgumentParser(
-        description="Train Hifigan (See detail in examples/hifigan/train_hifigan.py)"
-    )
-    parser.add_argument(
-    "--traindir",
-    default=None,
-    type=str,
-    help="directory including training data. ",
-    )
-    parser.add_argument(
-        "--outdir", type=str, required=True, help="directory to save checkpoints."
-    )
-    parser.add_argument(
-    "--config", type=str, required=True, help="yaml format configuration file."
-    )
-    parser.add_argument(
-    "--pretrained",
-    default="",
-    type=str,
-    nargs="?",
-    help="path of .h5 melgan generator to load weights from",
-    )
-    args = parser.parse_args()
-
-
-    ###Load Dataset => split
-    if args.traindir is None:
-        raise ValueError("Please specify --train-dir")
-    else :
-        X_train, X_val = train_test_split(pd.read_csv(f"{args.train_dir}/train.csv"), test_size = 0.2)
-    
     ###Set Augmentation
     train_augmentation = T.Compose([
         T.ToTensor(),
@@ -69,14 +44,14 @@ def main():
     ])
 
     ###Choose pretrained model.
-    if args.pretrained is None :
-        raise ValueError("Please specify --train-dir")
-    model = pretrainedmodels.__dict__[args.pretrained](pretrained='imagenet')
-    in_features = model.last_linear.in_features
-    model.last_linear = torch.nn.Linear(in_features, 186) 
+
+    model = models.resnet18(pretrained = True)
+    ## 우리 이미지 사이즈에 맞게 튜닝
+    model.fc = torch.nn.Linear(model.fc.in_features, 186) 
 
     ###Prepare for training
-
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_fn = nn.CrossEntropyLoss()
@@ -85,27 +60,30 @@ def main():
                                                       verbose=True,
                                                       patience=7,
                                                       factor=0.5)
+    df_train = pd.read_csv(f"{DIR}/train.csv")
+    X_train, X_val = train_test_split(df_train, test_size=0.2)
 
-    train_dataset = BengaliDataset(csv=X_train,
-                            img_height=137,
-                            img_width=236,
-                            transform=train_augmentation)
-    valid_dataset = BengaliDataset(csv=X_val,
+    train_dataset = BengaliDataset(data=X_train,
+                                img_height=137,
+                                img_width=236,
+                                transform=train_augmentation)
+    train_loader = DataLoader(train_dataset,
+                                shuffle=True,
+                                num_workers=0,
+                                batch_size=batch_size
+                                )
+    valid_dataset = BengaliDataset(data=X_val,
                                 img_height=137,
                                 img_width=236,
                                 transform=valid_augmentation)
-    train_loader = DataLoader(train_dataset,
-                            shuffle=True,
-                            num_workers=0,
-                            batch_size=128
-                        )
     valid_loader = DataLoader(valid_dataset,
-                        shuffle=False,
+                            shuffle=False,
                             num_workers=0,
-                            batch_size=128
-                        ) 
+                            batch_size=batch_size
+                            )
 
-    train_model()
+    train_model(model, train_loader, valid_loader,
+    n_iters=num_epochs, batch_size=batch_size)
                                                      
 if __name__ == "__main__":
     main()
