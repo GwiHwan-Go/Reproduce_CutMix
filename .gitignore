@@ -2,9 +2,7 @@ Local.py
 
 __pycache__
 
-preprocess.py
-
-model.pt
+.gitignore
 
 training.sh
 
