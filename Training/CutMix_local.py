@@ -28,8 +28,8 @@ from train_functions import cut, write_log
 def main():
     ##############PARAMETERS##################
     batch_size = 128
-    num_epochs = 100
-    file_name = f"./logs/no_cut_mic_logs.txt"
+    num_epochs = 20
+    file_name = f"./logs/ex2-2.txt"
     learn_rate = 0.01
     weight_decay = 0
     iscutmix = 0
@@ -37,8 +37,7 @@ def main():
 
     ###Set Augmentation
     train_augmentation = T.Compose([
-        T.ToTensor(),
-        T.RandomRotation(20),
+        T.ToTensor()
         ##we can add more augmentation##
     ])
 
@@ -55,6 +54,7 @@ def main():
     ###Prepare for training
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"we are going to use {device}")
+    print(f"log file will be {file_name}")
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_fn = nn.CrossEntropyLoss()
