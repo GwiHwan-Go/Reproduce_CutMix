@@ -17,3 +17,11 @@ saved_models
 train_functions.py
 
 model.pt
+
+tiny-imagenet-200
+
+*.json
+
+*.zip
+
+*.pt
