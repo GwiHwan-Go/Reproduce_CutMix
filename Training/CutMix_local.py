@@ -28,21 +28,23 @@ from train_functions import cut, write_log
 def main():
     ##############PARAMETERS##################
     batch_size = 128
-    num_epochs = 20
-    file_name = f"./logs/ex2-2.txt"
-    learn_rate = 0.01
-    weight_decay = 0
+    num_epochs = 40
+    file_name = f"./logs/ex3-2.txt"
     iscutmix = 0
     ##############PARAMETERS##################
 
     ###Set Augmentation
     train_augmentation = T.Compose([
-        T.ToTensor()
+        T.ToTensor(),
+        T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+
         ##we can add more augmentation##
     ])
 
     valid_augmentation = T.Compose([
         T.ToTensor(),
+        T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+
     ])
 
     ###Choose pretrained model.
