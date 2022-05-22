@@ -25,3 +25,7 @@ tiny-imagenet-200
 *.zip
 
 *.pt
+
+feature_cutmix
+
+Experiments
