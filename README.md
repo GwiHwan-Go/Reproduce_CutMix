@@ -4,6 +4,7 @@
 In this repository,
 
 We are going to reproduce the CutMix algorithm based on the paper "CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features".
+---The project was finished on 2022/05/24
 
 # The Overall Process
 
@@ -22,13 +23,13 @@ Above tasks will be done with the code demo.
 2. methods (including NNs) [22.5.8]
 3. model compilation [22.5.8]
 4. loss functions and optimisers [22.5.8]
-5. training [ ]
-6. tweaks [ ]
-7. comparison cutmix regulariztion with others [ ]
-8. feature extraction vs fine-tunning [ ]
+5. training [22.5.8-22.5.24]
+6. tweaks [o]
+7. comparison cutmix regulariztion with others [o]
+8. feature extraction vs fine-tunning [o]
 <img width="348" src="https://user-images.githubusercontent.com/83144588/167822795-270d32a4-a28f-48da-b6b9-e00625f8ca4b.png"/>
 
-9. Other dataset[ ]
+9. Other dataset[BegaliDB]
 
 Development Environment & Tools
 
@@ -49,9 +50,11 @@ Development Environment & Tools
 
 [22.5.8] Training
 
-[ ] paper summary
+[22.5.20] paper summary
 
-[ ] presentation
+[22.5.2] presentation
+
+-----Project Finished-----
 
 # Reference 
 
