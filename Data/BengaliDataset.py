@@ -45,5 +45,4 @@ if __name__ == "__main__" :
                             img_height=137,
                             img_width=236
                             )
-    print(dataset[0])
     print(len(dataset))
